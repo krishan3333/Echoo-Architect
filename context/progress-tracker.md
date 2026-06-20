@@ -4,19 +4,20 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Phase 1: Design System & UI Primitives
+- Phase 2: Editor Chrome
 
 ## Current Goal
 
-- Install and configure shadcn/ui with dark theme, add 7 UI primitive components, install lucide-react, create lib/utils.ts with cn() helper.
+- Build the base chrome components: EditorNavbar (fixed top bar with sidebar toggle) and ProjectSidebar (floating overlay panel with tabs and New Project button).
 
 ## Completed
 
 - 01-design-system: shadcn/ui configured (Tailwind v4), Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea installed, lucide-react installed, lib/utils.ts with cn() created, dark class applied to <html>.
+- 02-editor: EditorNavbar (fixed h-12 bar, PanelLeftOpen/PanelLeftClose toggle, z-40) and ProjectSidebar (fixed overlay, slides from left, isOpen/onClose props, My Projects + Shared tabs with empty states, New Project button) created. Dialog pattern confirmed ready via existing components/ui/dialog.tsx.
 
 ## In Progress
 
-- None yet.
+- None.
 
 ## Next Up
 
