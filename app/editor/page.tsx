@@ -4,10 +4,16 @@ import { getProjectsForUser } from "@/lib/projects"
 
 export default async function EditorPage() {
   const projects = await getProjectsForUser()
+  const ownedCount = projects.filter((project) => project.isOwned).length
+  const sharedCount = projects.length - ownedCount
 
   return (
     <EditorShell initialProjects={projects}>
-      <EditorHome />
+      <EditorHome
+        projectCount={projects.length}
+        ownedCount={ownedCount}
+        sharedCount={sharedCount}
+      />
     </EditorShell>
   )
 }

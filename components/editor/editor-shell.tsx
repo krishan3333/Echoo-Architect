@@ -6,6 +6,7 @@ import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ProjectDialogs } from "@/components/editor/project-dialogs"
 import { EditorDialogsContext } from "@/components/editor/editor-dialogs-context"
 import { useProjectActions } from "@/hooks/use-project-actions"
+import { cn } from "@/lib/utils"
 import type { ProjectView } from "@/lib/projects"
 
 interface EditorShellProps {
@@ -14,7 +15,7 @@ interface EditorShellProps {
 }
 
 export function EditorShell({ children, initialProjects }: EditorShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const dialogs = useProjectActions({
     initialProjects,
     onProjectCreated: () => setSidebarOpen(true),
@@ -24,6 +25,7 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
     <EditorDialogsContext.Provider value={{ openCreate: dialogs.openCreate }}>
       <EditorNavbar
         isSidebarOpen={sidebarOpen}
+        projectCount={dialogs.projects.length}
         onToggleSidebar={() => setSidebarOpen((isOpen) => !isOpen)}
       />
 
@@ -45,7 +47,14 @@ export function EditorShell({ children, initialProjects }: EditorShellProps) {
 
       <ProjectDialogs dialogs={dialogs} />
 
-      <main className="flex flex-1 flex-col pt-12">{children}</main>
+      <div
+        className={cn(
+          "flex min-h-screen flex-col pt-12 transition-all duration-300",
+          sidebarOpen && "md:pl-72"
+        )}
+      >
+        <main className="flex flex-1 flex-col">{children}</main>
+      </div>
     </EditorDialogsContext.Provider>
   )
 }
