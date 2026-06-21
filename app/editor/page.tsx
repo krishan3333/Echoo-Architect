@@ -1,11 +1,10 @@
 import { EditorShell } from "@/components/editor/editor-shell"
+import { EditorHome } from "@/components/editor/editor-home"
 
 export default function EditorPage() {
   return (
     <EditorShell>
-      <div className="flex flex-1 items-center justify-center">
-        <span className="text-muted-foreground">ghost AI</span>
-      </div>
+      <EditorHome />
     </EditorShell>
   )
 }
