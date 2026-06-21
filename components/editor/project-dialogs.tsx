@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import type { useProjectDialogs } from "@/hooks/use-project-dialogs"
+import type { useProjectActions } from "@/hooks/use-project-actions"
 
-type Dialogs = ReturnType<typeof useProjectDialogs>
+type Dialogs = ReturnType<typeof useProjectActions>
 
 export function ProjectDialogs({ dialogs }: { dialogs: Dialogs }) {
   return (
@@ -26,7 +26,7 @@ export function ProjectDialogs({ dialogs }: { dialogs: Dialogs }) {
 }
 
 function CreateProjectDialog({ dialogs }: { dialogs: Dialogs }) {
-  const { activeDialog, createName, setCreateName, createSlug, isLoading, handleCreate, close } =
+  const { activeDialog, createName, setCreateName, createRoomId, isLoading, handleCreate, close } =
     dialogs
 
   return (
@@ -55,9 +55,9 @@ function CreateProjectDialog({ dialogs }: { dialogs: Dialogs }) {
           </div>
           {createName && (
             <p className="text-xs text-muted-foreground">
-              Slug:{" "}
+              Room ID:{" "}
               <span className="font-mono text-foreground/80">
-                {createSlug || "—"}
+                {createRoomId || "—"}
               </span>
             </p>
           )}
