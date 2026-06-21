@@ -5,6 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Ghost AI design tokens */
+    --color-bg-base: oklch(0.08 0 0);
+    --color-bg-surface: oklch(0.11 0 0);
+    --color-border-default: oklch(1 0 0 / 8%);
+    --color-accent-primary: oklch(0.76 0.14 185);
+    --color-accent-primary-dim: oklch(0.18 0.05 185);
+    --color-text-primary: oklch(0.95 0 0);
+    --color-text-secondary: oklch(0.72 0 0);
+    --color-text-muted: oklch(0.52 0 0);
+    --color-text-faint: oklch(0.38 0 0);
+
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);
     --color-sidebar-ring: var(--sidebar-ring);
