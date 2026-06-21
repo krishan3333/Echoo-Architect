@@ -5,15 +5,18 @@ import { EditorNavbar } from "@/components/editor/editor-navbar"
 import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ProjectDialogs } from "@/components/editor/project-dialogs"
 import { EditorDialogsContext } from "@/components/editor/editor-dialogs-context"
-import { useProjectDialogs } from "@/hooks/use-project-dialogs"
+import { useProjectActions } from "@/hooks/use-project-actions"
+import type { ProjectView } from "@/lib/projects"
 
 interface EditorShellProps {
   children: React.ReactNode
+  initialProjects: ProjectView[]
 }
 
-export function EditorShell({ children }: EditorShellProps) {
+export function EditorShell({ children, initialProjects }: EditorShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const dialogs = useProjectDialogs({
+  const dialogs = useProjectActions({
+    initialProjects,
     onProjectCreated: () => setSidebarOpen(true),
   })
 
