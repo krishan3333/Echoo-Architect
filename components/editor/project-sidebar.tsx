@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Crown, Folder, FolderOpen, Pencil, Plus, Trash2, Users, X } from "lucide-react"
+import { Folder, FolderOpen, Pencil, Plus, Trash2, Users, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { getProjectTone } from "@/components/editor/project-tone"
@@ -112,45 +112,6 @@ export function ProjectSidebar({
             <X />
           </Button>
         </div>
-
-        {activeProject ? (
-          <div
-            className={cn(
-              "mt-4 rounded-2xl border px-3 py-3",
-              getProjectTone(activeProject.id).pill
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={cn(
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
-                  getProjectTone(activeProject.id).icon
-                )}
-              >
-                <FolderOpen className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-current/75">
-                  Open now
-                </p>
-                <p className="truncate pt-1 text-sm font-semibold text-text-primary">
-                  {activeProject.name}
-                </p>
-                <div className="pt-2 text-xs text-current/80">
-                  {activeProject.isOwned ? "Owner workspace" : "Shared workspace"}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-4 rounded-2xl border border-white/10 bg-white/3 px-3 py-3">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Open now</p>
-            <p className="pt-1 text-sm font-medium text-text-primary">No project selected</p>
-            <p className="pt-1 text-xs text-text-muted">
-              Pick a project here and it stays pinned in the workspace header.
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden p-3">
