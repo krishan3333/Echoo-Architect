@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Phase 6: Share Dialog
+- Phase 8: Base Canvas
 
 ## Current Goal
 
-- Share dialog wired to workspace navbar with owner/collaborator role enforcement.
+- Collaborative React Flow canvas live in the workspace, backed by Liveblocks storage.
 
 ## Completed
 
@@ -20,6 +20,9 @@ Update this file whenever the current phase, active feature, or implementation s
 - 07-wire-editor-home: app/editor/page.tsx is now a server component fetching owned+shared projects via lib/projects.ts (getProjectsForUser). hooks/use-project-actions.ts replaces the mock hook — create calls POST /api/projects with a slug-suffix room ID and navigates to /editor/[id], rename calls PATCH + router.refresh(), delete calls DELETE + redirects to /editor if active project else refresh. POST API accepts optional id to keep project ID and room ID aligned. Create dialog shows room ID preview, rename pre-fills name, delete shows project name. npm run build passes.
 - 08-editor-workspace-shell: app/editor/[roomId]/page.tsx server component — unauthenticated users redirect to /sign-in, missing/unauthorized projects render AccessDenied. lib/project-access.ts provides getCurrentIdentity() + getProjectWithAccess(). WorkspaceShell client component renders full-viewport layout: WorkspaceNavbar (project name, share button, AI sidebar toggle), ProjectSidebar with activeRoomId highlighting, canvas placeholder, AI sidebar placeholder. npm run build passes.
 - 09-share-dialog: Share button in WorkspaceNavbar opens ShareDialog. GET/POST /api/projects/[projectId]/collaborators and DELETE /api/projects/[projectId]/collaborators/[collaboratorId] enforce ownership server-side. Collaborator emails enriched with Clerk display name + avatar via clerkClient().users.getUserList. Owners can invite by email, view list with avatars/names, remove collaborators. Collaborators see read-only list. Copy-link button with "Copied!" feedback. ProjectAccess.isOwner added; page passes isOwner to WorkspaceShell. npm run build passes.
+- 10-liveblocks-setup: liveblocks.config.ts defines Presence (cursor + isThinking) and UserMeta (name, avatar, cursorColor). lib/liveblocks.ts is a cached Liveblocks node client with getUserCursorColor() that deterministically maps userId to a fixed 8-color palette. POST /api/liveblocks-auth requires Clerk auth, verifies project access via getProjectWithAccess(), ensures room exists (creates if missing), and returns a session token with user name/avatar/cursorColor. Returns 403 for unauthorized access. npm run build passes.
+- 11-base-canvas: types/canvas.ts defines NodeData (label, color, shape), CanvasNode, CanvasEdge. components/editor/canvas.tsx uses useLiveblocksFlow({ suspense: true }) wired into ReactFlow with dot Background + MiniMap. components/editor/canvas-wrapper.tsx wraps with LiveblocksErrorBoundary + LiveblocksProvider (/api/liveblocks-auth) + RoomProvider (initialPresence cursor: null, isThinking: false) + ClientSideSuspense. WorkspaceShell canvas placeholder replaced with CanvasWrapper. npm run build passes.
+- 12-shape-panel: ShapeType union (rectangle | diamond | circle | pill | cylinder | hexagon) added to types/canvas.ts. components/editor/shape-panel.tsx renders a floating pill toolbar at bottom-center with 6 draggable shape buttons; drag payload (application/ghost-shape) carries shape + default size. canvas.tsx adds CanvasNodeComponent (simple bordered rectangle with centered label) registered as "canvasNode", onDragOver + onDrop handlers using screenToFlowPosition to convert drop position, node IDs as shape-timestamp-counter. ReactFlowProvider added in canvas-wrapper.tsx so useReactFlow() has context above ReactFlow. npm run build passes.
 
 ## In Progress
 
@@ -27,7 +30,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Recently Completed
 
-- 09-share-dialog: Share dialog with invite, collaborator list (Clerk-enriched), remove, and copy-link. Owner/collaborator role enforced at API and UI layers.
+- 12-shape-panel: Floating shape toolbar with drag-to-canvas node creation; custom canvasNode renderer.
 
 ## Next Up
 
