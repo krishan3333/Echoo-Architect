@@ -3,6 +3,7 @@
 import {
   Crown,
   FolderOpen,
+  LayoutTemplate,
   PanelLeftClose,
   PanelLeftOpen,
   Share2,
@@ -22,6 +23,7 @@ interface WorkspaceNavbarProps {
   onToggleSidebar: () => void
   onToggleAi: () => void
   onShareOpen: () => void
+  onTemplatesOpen: () => void
   className?: string
 }
 
@@ -33,6 +35,7 @@ export function WorkspaceNavbar({
   onToggleSidebar,
   onToggleAi,
   onShareOpen,
+  onTemplatesOpen,
   className,
 }: WorkspaceNavbarProps) {
   const tone = getProjectTone(projectName)
@@ -85,6 +88,10 @@ export function WorkspaceNavbar({
       <div className="flex flex-1" />
 
       <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={onTemplatesOpen}>
+          <LayoutTemplate className="h-3.5 w-3.5" />
+          Templates
+        </Button>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={onShareOpen}>
           <Share2 className="h-3.5 w-3.5" />
           Share

@@ -7,6 +7,8 @@ import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ProjectDialogs } from "@/components/editor/project-dialogs"
 import { ShareDialog } from "@/components/editor/share-dialog"
 import { CanvasWrapper } from "@/components/editor/canvas-wrapper"
+import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal"
+import type { CanvasTemplate } from "@/components/editor/starter-templates"
 import { EditorDialogsContext } from "@/components/editor/editor-dialogs-context"
 import { useProjectActions } from "@/hooks/use-project-actions"
 import type { ProjectView } from "@/lib/projects"
@@ -22,6 +24,8 @@ export function WorkspaceShell({ roomId, projectName, initialProjects, isOwner }
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [aiOpen, setAiOpen] = useState(true)
   const [shareOpen, setShareOpen] = useState(false)
+  const [templatesOpen, setTemplatesOpen] = useState(false)
+  const [pendingTemplate, setPendingTemplate] = useState<CanvasTemplate | null>(null)
 
   const dialogs = useProjectActions({
     initialProjects,
@@ -38,6 +42,7 @@ export function WorkspaceShell({ roomId, projectName, initialProjects, isOwner }
         onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onToggleAi={() => setAiOpen((o) => !o)}
         onShareOpen={() => setShareOpen(true)}
+        onTemplatesOpen={() => setTemplatesOpen(true)}
       />
 
       {sidebarOpen && (
@@ -66,9 +71,19 @@ export function WorkspaceShell({ roomId, projectName, initialProjects, isOwner }
         isOwner={isOwner}
       />
 
+      <StarterTemplatesModal
+        open={templatesOpen}
+        onOpenChange={setTemplatesOpen}
+        onImport={(template) => setPendingTemplate(template)}
+      />
+
       {/* Canvas fills full viewport below navbar — sidebars float over it */}
       <div className="fixed inset-0 top-12">
-        <CanvasWrapper roomId={roomId} />
+        <CanvasWrapper
+          roomId={roomId}
+          pendingTemplate={pendingTemplate}
+          onTemplateImported={() => setPendingTemplate(null)}
+        />
       </div>
 
       {aiOpen && (

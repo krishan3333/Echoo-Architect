@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from "react"
 import { LiveblocksProvider, RoomProvider, ClientSideSuspense } from "@liveblocks/react"
 import { Canvas } from "@/components/editor/canvas"
+import type { CanvasTemplate } from "@/components/editor/starter-templates"
 
 class LiveblocksErrorBoundary extends Component<
   { children: ReactNode },
@@ -28,9 +29,11 @@ class LiveblocksErrorBoundary extends Component<
 
 interface CanvasWrapperProps {
   roomId: string
+  pendingTemplate?: CanvasTemplate | null
+  onTemplateImported?: () => void
 }
 
-export function CanvasWrapper({ roomId }: CanvasWrapperProps) {
+export function CanvasWrapper({ roomId, pendingTemplate, onTemplateImported }: CanvasWrapperProps) {
   return (
     <LiveblocksErrorBoundary>
       <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
@@ -45,7 +48,10 @@ export function CanvasWrapper({ roomId }: CanvasWrapperProps) {
               </div>
             }
           >
-            <Canvas />
+            <Canvas
+              pendingTemplate={pendingTemplate}
+              onTemplateImported={onTemplateImported}
+            />
           </ClientSideSuspense>
         </RoomProvider>
       </LiveblocksProvider>
