@@ -9,11 +9,14 @@ import {
   Share2,
   Sparkles,
   Users,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
 } from "lucide-react"
-import { UserButton } from "@clerk/nextjs"
 import { getProjectTone } from "@/components/editor/project-tone"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 
 interface WorkspaceNavbarProps {
   projectName: string
@@ -24,7 +27,35 @@ interface WorkspaceNavbarProps {
   onToggleAi: () => void
   onShareOpen: () => void
   onTemplatesOpen: () => void
+  saveStatus?: SaveStatus
+  onSave?: () => void
   className?: string
+}
+
+function SaveIndicator({ status }: { status: SaveStatus }) {
+  if (status === "idle") return null
+  if (status === "saving") {
+    return (
+      <span className="flex items-center gap-1 text-[11px] text-text-muted">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Saving…
+      </span>
+    )
+  }
+  if (status === "saved") {
+    return (
+      <span className="flex items-center gap-1 text-[11px] text-green-400/70">
+        <CheckCircle2 className="h-3 w-3" />
+        Saved
+      </span>
+    )
+  }
+  return (
+    <span className="flex items-center gap-1 text-[11px] text-red-400/70">
+      <AlertCircle className="h-3 w-3" />
+      Save failed
+    </span>
+  )
 }
 
 export function WorkspaceNavbar({
@@ -36,6 +67,8 @@ export function WorkspaceNavbar({
   onToggleAi,
   onShareOpen,
   onTemplatesOpen,
+  saveStatus = "idle",
+  onSave,
   className,
 }: WorkspaceNavbarProps) {
   const tone = getProjectTone(projectName)
@@ -85,9 +118,27 @@ export function WorkspaceNavbar({
         </div>
       </div>
 
-      <div className="flex flex-1" />
+      <div className="flex flex-1 items-center justify-center">
+        <SaveIndicator status={saveStatus} />
+      </div>
 
       <div className="flex items-center gap-2">
+        {onSave && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSave}
+            disabled={saveStatus === "saving"}
+          >
+            {saveStatus === "saving"
+              ? "Saving..."
+              : saveStatus === "saved"
+              ? "Saved"
+              : saveStatus === "error"
+              ? "Error"
+              : "Save"}
+          </Button>
+        )}
         <Button variant="outline" size="sm" className="gap-1.5" onClick={onTemplatesOpen}>
           <LayoutTemplate className="h-3.5 w-3.5" />
           Templates
@@ -109,7 +160,6 @@ export function WorkspaceNavbar({
           <Sparkles className="h-3.5 w-3.5" />
           AI
         </Button>
-        <UserButton />
       </div>
     </header>
   )

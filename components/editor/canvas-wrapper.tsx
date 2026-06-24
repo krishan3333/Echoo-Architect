@@ -4,6 +4,7 @@ import { Component, type ReactNode } from "react"
 import { LiveblocksProvider, RoomProvider, ClientSideSuspense } from "@liveblocks/react"
 import { Canvas } from "@/components/editor/canvas"
 import type { CanvasTemplate } from "@/components/editor/starter-templates"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 
 class LiveblocksErrorBoundary extends Component<
   { children: ReactNode },
@@ -31,15 +32,17 @@ interface CanvasWrapperProps {
   roomId: string
   pendingTemplate?: CanvasTemplate | null
   onTemplateImported?: () => void
+  onSaveStatusChange?: (status: SaveStatus) => void
+  onSaveReady?: (save: () => void) => void
 }
 
-export function CanvasWrapper({ roomId, pendingTemplate, onTemplateImported }: CanvasWrapperProps) {
+export function CanvasWrapper({ roomId, pendingTemplate, onTemplateImported, onSaveStatusChange, onSaveReady }: CanvasWrapperProps) {
   return (
     <LiveblocksErrorBoundary>
       <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
         <RoomProvider
           id={roomId}
-          initialPresence={{ cursor: null, isThinking: false }}
+          initialPresence={{ cursor: null, thinking: false }}
         >
           <ClientSideSuspense
             fallback={
@@ -49,8 +52,11 @@ export function CanvasWrapper({ roomId, pendingTemplate, onTemplateImported }: C
             }
           >
             <Canvas
+              projectId={roomId}
               pendingTemplate={pendingTemplate}
               onTemplateImported={onTemplateImported}
+              onSaveStatusChange={onSaveStatusChange}
+              onSaveReady={onSaveReady}
             />
           </ClientSideSuspense>
         </RoomProvider>
