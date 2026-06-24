@@ -10,6 +10,9 @@ import {
   NodeResizer,
   Position,
   useReactFlow,
+  useViewport,
+  useNodes,
+  useEdges,
   getSmoothStepPath,
   EdgeLabelRenderer,
   type NodeProps,
@@ -20,12 +23,15 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { useLiveblocksFlow } from "@liveblocks/react-flow"
-import { useUndo, useRedo, useCanUndo, useCanRedo } from "@liveblocks/react"
+import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence } from "@liveblocks/react"
+import { PresenceAvatars } from "@/components/editor/presence-avatars"
 import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react"
 import { NODE_COLORS } from "@/types/canvas"
 import type { CanvasNode, CanvasEdge, NodeColorPair, ShapeType } from "@/types/canvas"
 import { ShapePanel, DRAG_TYPE } from "@/components/editor/shape-panel"
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts"
+import { useCanvasAutosave } from "@/hooks/use-canvas-autosave"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 import type { CanvasTemplate } from "@/components/editor/starter-templates"
 
 const FILL = "rgba(255,255,255,0.05)"
@@ -68,7 +74,7 @@ function NodeHandles({ visible }: { visible: boolean }) {
   const style: React.CSSProperties = {
     ...HANDLE_STYLE,
     opacity: visible ? 1 : 0,
-    pointerEvents: visible ? "all" : "none",
+    pointerEvents: "all",
     transition: "opacity 0.15s",
   }
   return (
@@ -513,6 +519,64 @@ const BTN = {
   flexShrink: 0,
 } as React.CSSProperties
 
+function LiveCursors() {
+  const others = useOthers()
+  const { x: vpX, y: vpY, zoom } = useViewport()
+
+  return (
+    <>
+      {others.map((other) => {
+        if (!other.presence.cursor) return null
+        const { x: cx, y: cy } = other.presence.cursor
+        const screenX = vpX + cx * zoom
+        const screenY = vpY + cy * zoom
+        const color = other.info?.cursorColor ?? "#6366f1"
+        const name = other.info?.name ?? "Collaborator"
+
+        return (
+          <div
+            key={other.connectionId}
+            style={{
+              position: "absolute",
+              left: screenX,
+              top: screenY,
+              pointerEvents: "none",
+              zIndex: 50,
+              userSelect: "none",
+            }}
+          >
+            <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+              <path
+                d="M0 0L0 13.5L3.5 9.5L6.5 16.5L8.5 15.5L5.5 8.5L11.5 8.5Z"
+                fill={color}
+                stroke="rgba(0,0,0,0.25)"
+                strokeWidth="0.75"
+              />
+            </svg>
+            <div
+              style={{
+                position: "absolute",
+                top: 14,
+                left: 10,
+                background: color,
+                color: "#fff",
+                borderRadius: 4,
+                padding: "2px 6px",
+                fontSize: 11,
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+              }}
+            >
+              {name}
+            </div>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
 function ControlBar({
   rfRef,
   undo,
@@ -619,11 +683,53 @@ function ControlBar({
 }
 
 interface CanvasProps {
+  projectId: string
   pendingTemplate?: CanvasTemplate | null
   onTemplateImported?: () => void
+  onSaveStatusChange?: (status: SaveStatus) => void
+  onSaveReady?: (save: () => void) => void
 }
 
-export function Canvas({ pendingTemplate, onTemplateImported }: CanvasProps) {
+function DeleteHandler({
+  onNodesChange,
+  onEdgesChange,
+}: {
+  onNodesChange: OnNodesChange<CanvasNode>
+  onEdgesChange: OnEdgesChange<CanvasEdge>
+}) {
+  const nodes = useNodes<CanvasNode>()
+  const edges = useEdges<CanvasEdge>()
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) return
+
+      const selectedNodes = nodes.filter((n) => n.selected)
+      const selectedEdges = edges.filter((ed) => ed.selected)
+      if (selectedNodes.length === 0 && selectedEdges.length === 0) return
+
+      if (selectedNodes.length > 0) {
+        onNodesChange(selectedNodes.map((n) => ({ type: "remove" as const, id: n.id })))
+      }
+      if (selectedEdges.length > 0) {
+        onEdgesChange(selectedEdges.map((ed) => ({ type: "remove" as const, id: ed.id })))
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [nodes, edges, onNodesChange, onEdgesChange])
+
+  return null
+}
+
+export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveStatusChange, onSaveReady }: CanvasProps) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({ suspense: true })
 
@@ -631,9 +737,11 @@ export function Canvas({ pendingTemplate, onTemplateImported }: CanvasProps) {
   const redo = useRedo()
   const canUndo = useCanUndo()
   const canRedo = useCanRedo()
+  const updateMyPresence = useUpdateMyPresence()
 
   const rfInstance = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null)
   const counterRef = useRef(0)
+  const [ready, setReady] = useState(false)
 
   // Refs so the effect closure always sees latest values without re-triggering
   const nodesRef = useRef(nodes)
@@ -646,6 +754,44 @@ export function Canvas({ pendingTemplate, onTemplateImported }: CanvasProps) {
   onNodesChangeRef.current = onNodesChange
   onEdgesChangeRef.current = onEdgesChange
   onTemplateImportedRef.current = onTemplateImported
+
+  // On mount: load saved canvas from blob if the Liveblocks room is empty
+  useEffect(() => {
+    async function load() {
+      if (nodesRef.current.length > 0 || edgesRef.current.length > 0) {
+        setReady(true)
+        return
+      }
+      try {
+        const res = await fetch(`/api/projects/${projectId}/canvas`)
+        if (res.ok) {
+          const saved = await res.json() as { nodes: CanvasNode[]; edges: CanvasEdge[] }
+          if (saved.nodes.length > 0 || saved.edges.length > 0) {
+            onNodesChangeRef.current(saved.nodes.map(n => ({ type: "add" as const, item: n })))
+            onEdgesChangeRef.current(saved.edges.map(e => ({ type: "add" as const, item: e })))
+            setTimeout(() => rfInstance.current?.fitView({ duration: 300 }), 50)
+          }
+        }
+      } catch {}
+      setReady(true)
+    }
+    load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const { saveStatus, save } = useCanvasAutosave({ projectId, nodes, edges, ready })
+
+  const onSaveStatusChangeRef = useRef(onSaveStatusChange)
+  onSaveStatusChangeRef.current = onSaveStatusChange
+  useEffect(() => {
+    onSaveStatusChangeRef.current?.(saveStatus)
+  }, [saveStatus])
+
+  const onSaveReadyRef = useRef(onSaveReady)
+  onSaveReadyRef.current = onSaveReady
+  useEffect(() => {
+    onSaveReadyRef.current?.(save)
+  }, [save])
 
   useEffect(() => {
     if (!pendingTemplate) return
@@ -662,6 +808,22 @@ export function Canvas({ pendingTemplate, onTemplateImported }: CanvasProps) {
   }, [pendingTemplate])
 
   useKeyboardShortcuts(rfInstance, undo, redo)
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!rfInstance.current) return
+      const pos = rfInstance.current.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      })
+      updateMyPresence({ cursor: pos })
+    },
+    [updateMyPresence]
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    updateMyPresence({ cursor: null })
+  }, [updateMyPresence])
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -704,34 +866,40 @@ export function Canvas({ pendingTemplate, onTemplateImported }: CanvasProps) {
 
   return (
     <CanvasCtx.Provider value={{ onNodesChange, onEdgesChange }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onDelete={onDelete}
-        nodeTypes={NODE_TYPES}
-        edgeTypes={EDGE_TYPES}
-        defaultEdgeOptions={{ type: "canvasEdge" }}
-        onInit={(instance) => { rfInstance.current = instance }}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        fitView
-        connectOnClick={false}
-        connectionRadius={40}
-        className="h-full w-full"
-        style={{ background: "#07090c" }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(255,255,255,0.15)" />
-        <MiniMap
-          nodeColor="rgba(255,255,255,0.15)"
-          maskColor="rgba(0,0,0,0.6)"
-          style={{ background: "#0a0c10" }}
-        />
-        <ControlBar rfRef={rfInstance} undo={undo} redo={redo} canUndo={canUndo} canRedo={canRedo} />
-        <ShapePanel />
-      </ReactFlow>
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onDelete={onDelete}
+          nodeTypes={NODE_TYPES}
+          edgeTypes={EDGE_TYPES}
+          defaultEdgeOptions={{ type: "canvasEdge" }}
+          onInit={(instance) => { rfInstance.current = instance }}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          connectOnClick={false}
+          connectionRadius={40}
+          className="h-full w-full"
+          style={{ background: "#07090c" }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(255,255,255,0.15)" />
+          <MiniMap
+            nodeColor="rgba(255,255,255,0.15)"
+            maskColor="rgba(0,0,0,0.6)"
+            style={{ background: "#0a0c10" }}
+          />
+          <ControlBar rfRef={rfInstance} undo={undo} redo={redo} canUndo={canUndo} canRedo={canRedo} />
+          <ShapePanel />
+          <LiveCursors />
+          <DeleteHandler onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} />
+        </ReactFlow>
+        <PresenceAvatars />
+      </div>
     </CanvasCtx.Provider>
   )
 }

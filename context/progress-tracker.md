@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Phase 8: Base Canvas
+- Phase 11: Canvas Autosave
 
 ## Current Goal
 
-- Collaborative React Flow canvas live in the workspace, backed by Liveblocks storage. Edge behavior complete.
+- Autosave canvas state to Vercel Blob, load on editor open, show save status in navbar.
 
 ## Completed
 
@@ -29,6 +29,9 @@ Update this file whenever the current phase, active feature, or implementation s
 - 16-edge-behavior: EdgeData interface (label?: string) added to types/canvas.ts; CanvasEdge updated from Record<string,never> to EdgeData. CanvasEdgeComponent created using getSmoothStepPath for right-angle routing with borderRadius:6. Per-edge SVG arrowhead marker (unique ID arrow-${id}) with dynamic fill that matches stroke color. Invisible 16px-wide transparent path for easy hit area; visible 1.5px path that dims at rest (rgba white 0.3) and brightens on hover/select (rgba white 0.7). EdgeLabelRenderer positions label pill at getSmoothStepPath midpoint (labelX/labelY). Double-click opens auto-sizing input; saves on blur/Enter/Escape via onEdgesChange replace into Liveblocks state. Saved labels render as pill badges; active edge with no label shows faint "Add label" hint. All label interactions have nodrag/nopan + stopPropagation. Node handles now fade in on hover (not just selection) via local hovered state. CanvasCtx extended to carry onEdgesChange. defaultEdgeOptions sets type:"canvasEdge". npm run build passes.
 - 17-canvas-ergonomics: ControlBar component added to canvas.tsx — pill-shaped floating bar at bottom-left (above shape panel, bottom:76px left:16px) with zoom-out/fit-view/zoom-in and a thin divider then undo/redo. Zoom actions call rfInstance.current.zoomOut/zoomIn/fitView with duration animations. Undo/redo wired to useUndo/useRedo/useCanUndo/useCanRedo from @liveblocks/react; disabled buttons are visually dimmed (opacity 0.3, pointer-events none). hooks/useKeyboardShortcuts.ts created — receives a ReactFlowInstance ref + undo/redo handlers, listens on window keydown, skips INPUT/TEXTAREA/contenteditable targets. Shortcuts: +/= zoom in, - zoom out, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo, Ctrl/Cmd+Y redo. npm run build passes.
 - 18-starter-templates: components/editor/starter-templates.ts defines CanvasTemplate type and CANVAS_TEMPLATES array with three templates (Microservices, CI/CD Pipeline, Event-Driven System) using shared CanvasNode/CanvasEdge types and the NODE_COLORS palette. components/editor/starter-templates-modal.tsx renders a Dialog with a scrollable 1–3 column grid; each card shows an SVG preview (viewBox-based, bounds-fitted, edges as lines, nodes by shape/color) plus an Import button that calls onImport then closes. WorkspaceNavbar gains onTemplatesOpen prop and a Templates button (LayoutTemplate icon). WorkspaceShell manages templatesOpen + pendingTemplate state and renders StarterTemplatesModal; CanvasWrapper threads pendingTemplate/onTemplateImported to Canvas. Canvas useEffect fires on pendingTemplate change — clears all existing nodes/edges via onNodesChange/onEdgesChange remove+add in a single call, fits view after 50 ms, then calls onTemplateImported to reset state. npm run build passes.
+- 19-presence-avatars-cursors: liveblocks.config.ts Presence field renamed isThinking → thinking; canvas-wrapper.tsx initialPresence updated. components/editor/presence-avatars.tsx added — useOthers() filtered by Clerk userId via useUser(), shows up to 5 collaborator avatars in overlapping stack with cursorColor ring + initials fallback, +N overflow chip, divider only when collaborators exist, Clerk UserButton always shown; positioned top-right of the canvas area (absolute, outside ReactFlow). LiveCursors function component added inside canvas.tsx — uses useOthers() + useViewport() to convert flow coordinates to screen coordinates (vpX + cx*zoom, vpY + cy*zoom), renders colored SVG pointer + name badge per other participant; rendered as direct child of ReactFlow (screen-space layer). Canvas gains useUpdateMyPresence(), onMouseMove broadcasts screenToFlowPosition result, onMouseLeave clears cursor to null. Canvas return wrapped in a relative container div so PresenceAvatars can overlay it. npm run build passes.
+- 20-ai-sidebar-shell: AI sidebar extracted from inline WorkspaceShell into components/editor/ai-sidebar.tsx. Header with Bot icon, "AI Workspace" title, "Collaborate with Ghost AI" subtitle, X close button. Shadcn Tabs with "AI Architect" and "Specs" tabs; active tab underlined with accent-primary, inactive text uses text-muted. AI Architect tab: empty state with Bot icon, description, and 3 starter chips (styled as soft pills with bg-white/[0.05] and text-accent-primary); user messages right-aligned with accent-primary-dim background and border; assistant messages left-aligned with bg-white/[0.05]; auto-resizing Textarea (min 72px/max 160px), Send button uses bg-accent-primary text-white. Specs tab: Generate Spec button (bg-accent-primary), demo spec card with FileText icon, title, snippet, disabled Download button. workspace-shell.tsx updated to import AiSidebar and render it always (translate-x-full when closed, translate-x-0 when open) for smooth slide-in animation. All colors use Ghost AI design tokens (bg-bg-base, border-border-default, text-text-primary, text-text-muted, bg-accent-primary, bg-accent-primary-dim). npm run build passes.
+- 21-canvas-autosave: @vercel/blob installed. canvasJsonPath field on Project model reused for blob URL storage (no migration needed). GET/PUT /api/projects/[projectId]/canvas routes created — PUT uploads canvas JSON to Vercel Blob and stores URL in Prisma; GET reads blob URL from Prisma and fetches canvas JSON from Vercel Blob. hooks/use-canvas-autosave.ts debounces saves 1500ms, tracks idle/saving/saved/error status. Canvas component loads saved state on mount if Liveblocks room is empty (skips load if room has active nodes/edges). SaveIndicator component in WorkspaceNavbar shows saving/saved/error states via Loader2/CheckCircle2/AlertCircle icons. npm run build passes.
 
 ## In Progress
 
@@ -36,7 +39,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Recently Completed
 
-- 18-starter-templates (see Completed above).
+- 21-canvas-autosave (see Completed above).
 
 ## Next Up
 
