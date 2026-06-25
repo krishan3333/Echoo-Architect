@@ -1,7 +1,7 @@
 "use client"
 
 import { Component, type ReactNode } from "react"
-import { LiveblocksProvider, RoomProvider, ClientSideSuspense } from "@liveblocks/react"
+import { ClientSideSuspense } from "@liveblocks/react"
 import { Canvas } from "@/components/editor/canvas"
 import type { CanvasTemplate } from "@/components/editor/starter-templates"
 import type { SaveStatus } from "@/hooks/use-canvas-autosave"
@@ -39,28 +39,21 @@ interface CanvasWrapperProps {
 export function CanvasWrapper({ roomId, pendingTemplate, onTemplateImported, onSaveStatusChange, onSaveReady }: CanvasWrapperProps) {
   return (
     <LiveblocksErrorBoundary>
-      <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-        <RoomProvider
-          id={roomId}
-          initialPresence={{ cursor: null, thinking: false }}
-        >
-          <ClientSideSuspense
-            fallback={
-              <div className="flex h-full w-full items-center justify-center text-sm text-white/40">
-                Connecting…
-              </div>
-            }
-          >
-            <Canvas
-              projectId={roomId}
-              pendingTemplate={pendingTemplate}
-              onTemplateImported={onTemplateImported}
-              onSaveStatusChange={onSaveStatusChange}
-              onSaveReady={onSaveReady}
-            />
-          </ClientSideSuspense>
-        </RoomProvider>
-      </LiveblocksProvider>
+      <ClientSideSuspense
+        fallback={
+          <div className="flex h-full w-full items-center justify-center text-sm text-white/40">
+            Connecting…
+          </div>
+        }
+      >
+        <Canvas
+          projectId={roomId}
+          pendingTemplate={pendingTemplate}
+          onTemplateImported={onTemplateImported}
+          onSaveStatusChange={onSaveStatusChange}
+          onSaveReady={onSaveReady}
+        />
+      </ClientSideSuspense>
     </LiveblocksErrorBoundary>
   )
 }
