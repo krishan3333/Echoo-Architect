@@ -18,7 +18,7 @@ export default async function EditorRoomPage({ params }: Props) {
 
   const [project, projects] = await Promise.all([
     getProjectWithAccess(roomId, identity),
-    getProjectsForUser(),
+    getProjectsForUser(identity),
   ])
 
   if (!project) {
