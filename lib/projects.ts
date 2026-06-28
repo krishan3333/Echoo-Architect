@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server"
+import { unstable_cache } from "next/cache"
 import prisma from "@/lib/prisma"
 
 export interface ProjectView {
@@ -7,13 +8,11 @@ export interface ProjectView {
   isOwned: boolean
 }
 
-export async function getProjectsForUser(): Promise<ProjectView[]> {
-  const { userId } = await auth()
-  if (!userId) return []
+export function projectsCacheTag(userId: string) {
+  return `projects-user-${userId}`
+}
 
-  const user = await currentUser()
-  const email = user?.emailAddresses[0]?.emailAddress
-
+async function fetchProjects(userId: string, email: string | null): Promise<ProjectView[]> {
   const [ownedProjects, sharedCollabs] = await Promise.all([
     prisma.project.findMany({
       where: { ownerId: userId },
@@ -37,4 +36,26 @@ export async function getProjectsForUser(): Promise<ProjectView[]> {
   }))
 
   return [...owned, ...shared]
+}
+
+export async function getProjectsForUser(identity?: { userId: string; email: string | null }): Promise<ProjectView[]> {
+  let userId: string
+  let email: string | null
+
+  if (identity) {
+    userId = identity.userId
+    email = identity.email
+  } else {
+    const authResult = await auth()
+    if (!authResult.userId) return []
+    userId = authResult.userId
+    const user = await currentUser()
+    email = user?.emailAddresses[0]?.emailAddress ?? null
+  }
+
+  return unstable_cache(
+    () => fetchProjects(userId, email),
+    [`projects-${userId}`],
+    { revalidate: 60, tags: [projectsCacheTag(userId)] }
+  )()
 }

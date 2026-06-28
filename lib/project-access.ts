@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server"
+import { cache } from "react"
 import prisma from "@/lib/prisma"
 
 export interface CurrentIdentity {
@@ -12,7 +13,9 @@ export interface ProjectAccess {
   isOwner: boolean
 }
 
-export async function getCurrentIdentity(): Promise<CurrentIdentity | null> {
+// Deduplicated per-request — both getCurrentIdentity() and getProjectsForUser()
+// need the same Clerk data; this ensures only one network call per render.
+export const getCurrentIdentity = cache(async (): Promise<CurrentIdentity | null> => {
   const { userId } = await auth()
   if (!userId) return null
 
@@ -20,7 +23,7 @@ export async function getCurrentIdentity(): Promise<CurrentIdentity | null> {
   const email = user?.emailAddresses[0]?.emailAddress ?? null
 
   return { userId, email }
-}
+})
 
 export async function getProjectWithAccess(
   roomId: string,

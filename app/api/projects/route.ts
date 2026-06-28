@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server"
 import { type NextRequest } from "next/server"
+import { revalidateTag } from "next/cache"
 import prisma from "@/lib/prisma"
+import { projectsCacheTag } from "@/lib/projects"
 
 export async function GET() {
   const { userId } = await auth()
@@ -26,5 +28,6 @@ export async function POST(request: NextRequest) {
     data: { ...(id ? { id } : {}), ownerId: userId, name },
   })
 
+  revalidateTag(projectsCacheTag(userId), 'default')
   return Response.json(project, { status: 201 })
 }

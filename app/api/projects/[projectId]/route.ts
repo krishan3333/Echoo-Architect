@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server"
 import { type NextRequest } from "next/server"
+import { revalidateTag } from "next/cache"
 import prisma from "@/lib/prisma"
+import { projectsCacheTag } from "@/lib/projects"
 
 export async function PATCH(
   request: NextRequest,
@@ -24,6 +26,7 @@ export async function PATCH(
     data: { name },
   })
 
+  revalidateTag(projectsCacheTag(userId), 'default')
   return Response.json(updated)
 }
 
@@ -42,5 +45,6 @@ export async function DELETE(
 
   await prisma.project.delete({ where: { id: projectId } })
 
+  revalidateTag(projectsCacheTag(userId), 'default')
   return new Response(null, { status: 204 })
 }
