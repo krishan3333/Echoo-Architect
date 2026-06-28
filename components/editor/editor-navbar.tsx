@@ -1,8 +1,9 @@
 "use client"
 
-import { PanelLeftClose, PanelLeftOpen, PanelsTopLeft } from "lucide-react"
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/logo"
 import { cn } from "@/lib/utils"
 
 interface EditorNavbarProps {
@@ -35,16 +36,11 @@ export function EditorNavbar({
           {isSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
         </Button>
 
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-500/14 text-cyan-200 ring-1 ring-inset ring-cyan-400/20">
-          <PanelsTopLeft className="h-4 w-4" />
-        </div>
+        <Logo width={72} height={22} />
 
-        <div className="flex flex-col gap-0.5 leading-none">
-          <span className="text-sm font-semibold text-text-primary">Echoo Architect Workspace</span>
-          <span className="text-[11px] text-text-muted">
-            {projectCount} {projectCount === 1 ? "project" : "projects"} available
-          </span>
-        </div>
+        <span className="text-[11px] text-text-muted">
+          {projectCount} {projectCount === 1 ? "project" : "projects"} available
+        </span>
       </div>
 
       <div className="flex flex-1 justify-center" />
