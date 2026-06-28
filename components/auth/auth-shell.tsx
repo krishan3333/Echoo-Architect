@@ -1,6 +1,7 @@
 import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs"
 import { BrainCircuit, Share2, ScrollText } from "lucide-react"
 import type { ReactNode } from "react"
+import { Logo } from "@/components/logo"
 
 const features = [
   {
@@ -46,25 +47,25 @@ export function AuthShell({ children }: { children: ReactNode }) {
           <section className="hidden min-w-0 flex-col bg-bg-surface border-r border-border-default md:flex">
             <div className="px-12 pt-10">
               <div className="flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-lg bg-accent-primary flex items-center justify-center shrink-0">
-                  <span
-                    className="text-bg-base font-bold text-xs leading-none"
-                    style={{ fontFamily: "var(--font-geist-sans)" }}
-                  >
-                    G
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-text-primary">
-                  Echoo Architect
+                <Logo width={48} height={16} />
+                <span
+                  style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+                  className="text-2xl font-bold tracking-wide select-none"
+                >
+                  <span className="text-text-primary">Echoo </span>
+                  <span className="text-blue-500">Architect</span>
                 </span>
               </div>
             </div>
 
             <div className="flex-1 flex flex-col justify-center px-12 py-16">
-              <h1 className="text-4xl font-bold text-text-primary leading-tight tracking-tight mb-5">
-                Design systems at the
+              <h1
+                style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+                className="text-4xl font-bold leading-tight tracking-tight mb-5"
+              >
+                <span className="text-text-primary">Design systems at the</span>
                 <br />
-                speed of thought.
+                <span className="text-text-primary">speed of thought.</span>
               </h1>
               <p className="text-text-secondary text-base leading-relaxed mb-12 max-w-sm">
                 Describe your architecture in plain English. Echoo Architect maps it
@@ -91,8 +92,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="px-12 pb-10">
-              <p className="text-xs text-text-faint">
-                &copy; 2026 Echoo Architect. All rights reserved.
+              <p
+                style={{ fontFamily: "'Comic Sans MS', 'Comic Sans', cursive" }}
+                className="text-xs text-text-faint"
+              >
+                &copy; 2026 Echoo{" "}
+                <span className="text-blue-400">Architect</span>. All rights reserved.
               </p>
             </div>
           </section>

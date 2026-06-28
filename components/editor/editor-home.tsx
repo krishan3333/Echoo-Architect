@@ -2,7 +2,6 @@
 
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Logo } from "@/components/logo"
 import { useEditorDialogs } from "@/components/editor/editor-dialogs-context"
 
 interface EditorHomeProps {
@@ -28,9 +27,7 @@ export function EditorHome({ projectCount, ownedCount, sharedCount }: EditorHome
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_40%)]" />
 
         <div className="relative mx-auto flex max-w-3xl flex-1 flex-col items-center justify-center px-6 text-center">
-          <Logo width={160} height={48} />
-
-          <p className="mt-8 text-xs uppercase tracking-[0.24em] text-text-muted">
+          <p className="text-xs uppercase tracking-[0.24em] text-text-muted">
             Workspace Overview
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-text-primary sm:text-4xl">

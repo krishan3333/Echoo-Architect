@@ -36,7 +36,7 @@ export function EditorNavbar({
           {isSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
         </Button>
 
-        <Logo width={72} height={22} />
+        <Logo width={40} height={14} />
 
         <span className="text-[11px] text-text-muted">
           {projectCount} {projectCount === 1 ? "project" : "projects"} available
