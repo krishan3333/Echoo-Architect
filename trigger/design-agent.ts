@@ -5,10 +5,6 @@ import { z } from "zod"
 import { getLiveblocksClient } from "../lib/liveblocks"
 import { NODE_COLORS } from "../types/canvas"
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY!,
-})
-
 const NodeSchema = z.object({
   id: z.string().describe("Unique node ID, e.g. 'ai-node-1'"),
   label: z.string().describe("Display label for the node"),
@@ -44,6 +40,9 @@ export const designAgent = task({
   id: "design-agent",
   retry: { maxAttempts: 2 },
   run: async (payload: { prompt: string; roomId: string; triggeredBy: string }) => {
+    const google = createGoogleGenerativeAI({
+      apiKey: process.env.GOOGLE_API_KEY!,
+    })
     const { prompt, roomId, triggeredBy } = payload
     const liveblocks = getLiveblocksClient()
 

@@ -5,10 +5,6 @@ import { z } from "zod"
 import { put } from "@vercel/blob"
 import prisma from "@/lib/prisma"
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY!,
-})
-
 const ChatMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string(),
@@ -50,6 +46,10 @@ export const generateSpec = schemaTask({
     edges: z.array(EdgeSchema).default([]),
   }),
   run: async (payload) => {
+    const google = createGoogleGenerativeAI({
+      apiKey: process.env.GOOGLE_API_KEY!,
+    })
+
     const { projectId, chatHistory, nodes, edges } = payload
 
     metadata.set("status", "starting").set("projectId", projectId)
