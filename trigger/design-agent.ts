@@ -67,12 +67,12 @@ export const designAgent = task({
 
     try {
       await broadcast({ type: "ai:thinking", thinking: true })
-      await broadcast({ type: "ai:status", message: "Ghost AI is analyzing your prompt…", status: "start" })
+      await broadcast({ type: "ai:status", message: "Echoo Architect is analyzing your prompt…", status: "start" })
 
       const { object: design } = await generateObject({
         model: google("gemini-2.5-flash"),
         schema: DesignSchema,
-        system: `You are Ghost AI, an expert system architect designing for a collaborative canvas.
+        system: `You are Echoo Architect, an expert system architect designing for a collaborative canvas.
 
 Layout rules:
 - Node IDs: use "ai-node-1", "ai-node-2", etc. (sequential, starting from 1)

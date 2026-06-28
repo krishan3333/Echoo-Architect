@@ -55,7 +55,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
                   </span>
                 </div>
                 <span className="text-sm font-semibold text-text-primary">
-                  Ghost AI
+                  Echoo Architect
                 </span>
               </div>
             </div>
@@ -67,7 +67,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
                 speed of thought.
               </h1>
               <p className="text-text-secondary text-base leading-relaxed mb-12 max-w-sm">
-                Describe your architecture in plain English. Ghost AI maps it
+                Describe your architecture in plain English. Echoo Architect maps it
                 to a shared canvas your whole team can refine in real time.
               </p>
 
@@ -92,7 +92,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
 
             <div className="px-12 pb-10">
               <p className="text-xs text-text-faint">
-                &copy; 2026 Ghost AI. All rights reserved.
+                &copy; 2026 Echoo Architect. All rights reserved.
               </p>
             </div>
           </section>

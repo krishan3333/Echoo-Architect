@@ -42027,7 +42027,7 @@ var generateSpec = schemaTask({
     metadata.set("status", "generating");
     const { text: spec } = await generateText({
       model: google("gemini-2.5-flash"),
-      system: `You are Ghost AI, a technical architect. Generate a detailed Markdown technical specification document from the provided canvas diagram and conversation context.
+      system: `You are Echoo Architect, a technical architect. Generate a detailed Markdown technical specification document from the provided canvas diagram and conversation context.
 
 The spec must include:
 1. **Overview** — what the system does

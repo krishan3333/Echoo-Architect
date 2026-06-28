@@ -1,5 +1,5 @@
 {
-  "configPath": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-BqsJlu\\trigger.config.mjs",
+  "configPath": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-53TqkH\\trigger.config.mjs",
   "customConditions": [
   ],
   "prompts": [
@@ -10,7 +10,7 @@
   "runtimeVersion": "22.18.0",
   "tasks": [
     {
-      "entryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-BqsJlu\\design-agent.mjs",
+      "entryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-53TqkH\\design-agent.mjs",
       "filePath": "trigger/design-agent.ts",
       "id": "design-agent",
       "maxDuration": 3600,
@@ -23,7 +23,7 @@
       }
     },
     {
-      "entryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-BqsJlu\\generate-spec.mjs",
+      "entryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-53TqkH\\generate-spec.mjs",
       "filePath": "trigger/generate-spec.ts",
       "id": "generate-spec",
       "maxDuration": 3600,
@@ -166,8 +166,8 @@
     }
   ],
   "timings": {
-    "trigger/design-agent.ts": 46.61670000000001,
-    "trigger/generate-spec.ts": 87.35650000000004
+    "trigger/design-agent.ts": 47.950999999999965,
+    "trigger/generate-spec.ts": 77.1252
   },
-  "workerEntryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-BqsJlu\\dev-run-worker.mjs"
+  "workerEntryPoint": "D:\\1.exe\\ghost-ai\\.trigger\\tmp\\build-53TqkH\\dev-run-worker.mjs"
 }

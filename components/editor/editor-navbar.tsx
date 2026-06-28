@@ -40,7 +40,7 @@ export function EditorNavbar({
         </div>
 
         <div className="flex flex-col gap-0.5 leading-none">
-          <span className="text-sm font-semibold text-text-primary">Ghost AI Workspace</span>
+          <span className="text-sm font-semibold text-text-primary">Echoo Architect Workspace</span>
           <span className="text-[11px] text-text-muted">
             {projectCount} {projectCount === 1 ? "project" : "projects"} available
           </span>

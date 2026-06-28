@@ -1,1 +1,1 @@
-# Ghost-ai
+# Echoo Architect

@@ -426,7 +426,7 @@ export function AiSidebar({ isOpen, onClose, roomId }: AiSidebarProps) {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-text-primary">AI Workspace</h2>
-            <p className="text-[11px] text-text-muted">Collaborate with Ghost AI</p>
+            <p className="text-[11px] text-text-muted">Collaborate with Echoo Architect</p>
           </div>
         </div>
         <button
@@ -474,7 +474,7 @@ export function AiSidebar({ isOpen, onClose, roomId }: AiSidebarProps) {
                 <Bot className="h-3 w-3 shrink-0 text-accent-primary/60" />
               )}
               <span className="truncate text-[11px] text-text-muted">
-                {feedMessage ?? "Ghost AI is thinking…"}
+                {feedMessage ?? "Echoo Architect is thinking…"}
               </span>
             </div>
           )}
@@ -486,7 +486,7 @@ export function AiSidebar({ isOpen, onClose, roomId }: AiSidebarProps) {
                   <Bot className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">Ghost AI Architect</p>
+                  <p className="text-sm font-medium text-text-primary">Echoo Architect</p>
                   <p className="mt-1 text-xs leading-relaxed text-text-muted">
                     Describe your system and I&apos;ll design the architecture on the canvas.
                   </p>
@@ -545,7 +545,7 @@ export function AiSidebar({ isOpen, onClose, roomId }: AiSidebarProps) {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Ghost AI…"
+                placeholder="Ask Echoo Architect…"
                 disabled={inputDisabled}
                 style={{ minHeight: 72, maxHeight: 160 }}
                 className="resize-none border-0 bg-transparent p-1 text-xs text-text-primary placeholder:text-text-faint focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50"

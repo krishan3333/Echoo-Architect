@@ -633,7 +633,7 @@ function AiCursor({ position }: { position: { x: number; y: number } | null }) {
           boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
         }}
       >
-        Ghost AI
+        Echoo Architect
       </div>
     </div>
   )
@@ -1073,12 +1073,12 @@ export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveS
                   borderRadius: "50%",
                   background: "#855cff",
                   display: "inline-block",
-                  animation: "ghost-ai-pulse 1.2s ease-in-out infinite",
+                  animation: "echoo-architect-pulse 1.2s ease-in-out infinite",
                 }}
               />
             )}
-            <span>{aiStatus?.message ?? "Ghost AI is designing…"}</span>
-            <style>{`@keyframes ghost-ai-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }`}</style>
+            <span>{aiStatus?.message ?? "Echoo Architect is designing…"}</span>
+            <style>{`@keyframes echoo-architect-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }`}</style>
           </div>
         )}
         <ReactFlow
