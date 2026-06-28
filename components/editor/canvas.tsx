@@ -23,7 +23,7 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { useLiveblocksFlow } from "@liveblocks/react-flow"
-import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence } from "@liveblocks/react"
+import { useUndo, useRedo, useCanUndo, useCanRedo, useOthers, useUpdateMyPresence, useEventListener, useSelf } from "@liveblocks/react"
 import { PresenceAvatars } from "@/components/editor/presence-avatars"
 import { ZoomIn, ZoomOut, Maximize2, Undo2, Redo2 } from "lucide-react"
 import { NODE_COLORS } from "@/types/canvas"
@@ -566,14 +566,76 @@ function LiveCursors() {
                 fontWeight: 500,
                 whiteSpace: "nowrap",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
               }}
             >
+              {other.presence.thinking && (
+                <span
+                  className="animate-spin"
+                  style={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    border: "1.5px solid rgba(255,255,255,0.35)",
+                    borderTopColor: "#fff",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
               {name}
             </div>
           </div>
         )
       })}
     </>
+  )
+}
+
+function AiCursor({ position }: { position: { x: number; y: number } | null }) {
+  const { x: vpX, y: vpY, zoom } = useViewport()
+  if (!position) return null
+  const sx = vpX + position.x * zoom
+  const sy = vpY + position.y * zoom
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: sx,
+        top: sy,
+        pointerEvents: "none",
+        zIndex: 50,
+        userSelect: "none",
+      }}
+    >
+      <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+        <path
+          d="M0 0L0 13.5L3.5 9.5L6.5 16.5L8.5 15.5L5.5 8.5L11.5 8.5Z"
+          fill="#855cff"
+          stroke="rgba(0,0,0,0.25)"
+          strokeWidth="0.75"
+        />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          top: 14,
+          left: 10,
+          background: "#855cff",
+          color: "#fff",
+          borderRadius: 4,
+          padding: "2px 6px",
+          fontSize: 11,
+          fontWeight: 500,
+          whiteSpace: "nowrap",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+        }}
+      >
+        Echoo Architect
+      </div>
+    </div>
   )
 }
 
@@ -682,6 +744,79 @@ function ControlBar({
   )
 }
 
+function applyCanvasOp(
+  op: { [key: string]: string | number | boolean | null },
+  nodes: CanvasNode[],
+  onNodesChange: OnNodesChange<CanvasNode>,
+  onEdgesChange: OnEdgesChange<CanvasEdge>,
+) {
+  const t = op.type as string
+  if (t === "add_node") {
+    onNodesChange([{
+      type: "add",
+      item: {
+        id: op.id as string,
+        type: "canvasNode",
+        position: { x: op.x as number, y: op.y as number },
+        data: {
+          label: op.label as string,
+          shape: op.shape as CanvasNode["data"]["shape"],
+          color: op.color as string,
+          textColor: op.textColor as string,
+        },
+        width: op.width as number,
+        height: op.height as number,
+      } as CanvasNode,
+    }])
+  } else if (t === "move_node") {
+    const node = nodes.find(n => n.id === op.id)
+    if (node) {
+      onNodesChange([{ type: "position", id: op.id as string, position: { x: op.x as number, y: op.y as number } }])
+    }
+  } else if (t === "resize_node") {
+    const node = nodes.find(n => n.id === op.id)
+    if (node) {
+      onNodesChange([{
+        type: "replace",
+        id: op.id as string,
+        item: { ...node, width: op.width as number, height: op.height as number },
+      }])
+    }
+  } else if (t === "update_node") {
+    const node = nodes.find(n => n.id === op.id)
+    if (node) {
+      const colorPair = op.colorIndex !== undefined ? NODE_COLORS[op.colorIndex as number] : undefined
+      onNodesChange([{
+        type: "replace",
+        id: op.id as string,
+        item: {
+          ...node,
+          data: {
+            ...node.data,
+            ...(op.label !== undefined ? { label: op.label as string } : {}),
+            ...(colorPair ? { color: colorPair.bg, textColor: colorPair.text } : {}),
+          },
+        },
+      }])
+    }
+  } else if (t === "delete_node") {
+    onNodesChange([{ type: "remove", id: op.id as string }])
+  } else if (t === "add_edge") {
+    onEdgesChange([{
+      type: "add",
+      item: {
+        id: op.id as string,
+        type: "canvasEdge",
+        source: op.source as string,
+        target: op.target as string,
+        data: { label: (op.label as string) ?? "" },
+      } as CanvasEdge,
+    }])
+  } else if (t === "delete_edge") {
+    onEdgesChange([{ type: "remove", id: op.id as string }])
+  }
+}
+
 interface CanvasProps {
   projectId: string
   pendingTemplate?: CanvasTemplate | null
@@ -739,6 +874,14 @@ export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveS
   const canRedo = useCanRedo()
   const updateMyPresence = useUpdateMyPresence()
 
+  const mySelf = useSelf()
+
+  // AI presence state
+  const [aiThinking, setAiThinking] = useState(false)
+  const [aiCursor, setAiCursor] = useState<{ x: number; y: number } | null>(null)
+  const [aiStatus, setAiStatus] = useState<{ message: string; kind: string } | null>(null)
+  const aiStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const rfInstance = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null)
   const counterRef = useRef(0)
   const [ready, setReady] = useState(false)
@@ -754,6 +897,37 @@ export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveS
   onNodesChangeRef.current = onNodesChange
   onEdgesChangeRef.current = onEdgesChange
   onTemplateImportedRef.current = onTemplateImported
+
+  // Listen for AI events broadcasted from the design-agent task
+  useEventListener(({ event }) => {
+    if (event.type === "ai:thinking") {
+      setAiThinking(event.thinking ?? false)
+    }
+
+    if (event.type === "ai:cursor") {
+      setAiCursor(event.position ?? null)
+    }
+
+    if (event.type === "ai:status" && event.message) {
+      if (aiStatusTimerRef.current) clearTimeout(aiStatusTimerRef.current)
+      setAiStatus({ message: event.message, kind: event.status ?? "processing" })
+      if (event.status === "complete" || event.status === "error") {
+        aiStatusTimerRef.current = setTimeout(() => setAiStatus(null), 5000)
+      }
+    }
+
+    if (event.type === "ai:canvas-op") {
+      // Only the triggering user applies canvas ops to avoid multi-client duplication
+      if (event.triggeredBy === mySelf?.id && event.op) {
+        applyCanvasOp(
+          event.op,
+          nodesRef.current,
+          onNodesChangeRef.current,
+          onEdgesChangeRef.current,
+        )
+      }
+    }
+  })
 
   // On mount: load saved canvas from blob if the Liveblocks room is empty
   useEffect(() => {
@@ -867,6 +1041,46 @@ export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveS
   return (
     <CanvasCtx.Provider value={{ onNodesChange, onEdgesChange }}>
       <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        {/* AI thinking banner */}
+        {(aiThinking || aiStatus) && (
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 40,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "rgba(13,15,20,0.92)",
+              border: `1px solid ${aiStatus?.kind === "error" ? "rgba(255,97,102,0.5)" : aiStatus?.kind === "complete" ? "rgba(98,192,115,0.5)" : "rgba(133,92,255,0.4)"}`,
+              borderRadius: 999,
+              padding: "6px 14px",
+              fontSize: 12,
+              color: aiStatus?.kind === "error" ? "#ff6166" : aiStatus?.kind === "complete" ? "#62c073" : "rgba(255,255,255,0.85)",
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {aiThinking && (
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#855cff",
+                  display: "inline-block",
+                  animation: "echoo-architect-pulse 1.2s ease-in-out infinite",
+                }}
+              />
+            )}
+            <span>{aiStatus?.message ?? "Echoo Architect is designing…"}</span>
+            <style>{`@keyframes echoo-architect-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }`}</style>
+          </div>
+        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -896,6 +1110,7 @@ export function Canvas({ projectId, pendingTemplate, onTemplateImported, onSaveS
           <ControlBar rfRef={rfInstance} undo={undo} redo={redo} canUndo={canUndo} canRedo={canRedo} />
           <ShapePanel />
           <LiveCursors />
+          <AiCursor position={aiCursor} />
           <DeleteHandler onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} />
         </ReactFlow>
         <PresenceAvatars />

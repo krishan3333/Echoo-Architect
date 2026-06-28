@@ -1,3 +1,6 @@
+import type { LiveList } from "@liveblocks/client"
+import type { AiChatMessage } from "./types/tasks"
+
 // Define Liveblocks types for your application
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 declare global {
@@ -9,7 +12,9 @@ declare global {
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
-    Storage: {};
+    Storage: {
+      chatMessages: LiveList<AiChatMessage>
+    };
 
     // Custom user info set when authenticating with a secret key
     UserMeta: {
@@ -22,7 +27,20 @@ declare global {
     };
 
     // Custom events, for useBroadcastEvent, useEventListener
-    RoomEvent: {};
+    // NOTE: Liveblocks requires RoomEvent to be a plain object type (not a union of objects)
+    RoomEvent: {
+      type: "ai:status" | "ai:thinking" | "ai:cursor" | "ai:canvas-op"
+      // ai:status
+      message?: string
+      status?: "start" | "processing" | "complete" | "error"
+      // ai:thinking
+      thinking?: boolean
+      // ai:cursor
+      position?: { x: number; y: number } | null
+      // ai:canvas-op
+      triggeredBy?: string
+      op?: { [key: string]: string | number | boolean | null }
+    };
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
     ThreadMetadata: {};

@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    /* Ghost AI design tokens */
+    /* Echoo Architect design tokens */
     --color-bg-base: oklch(0.08 0 0);
     --color-bg-surface: oklch(0.11 0 0);
     --color-border-default: oklch(1 0 0 / 8%);
