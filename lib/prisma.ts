@@ -1,8 +1,6 @@
 import { PrismaClient } from '../app/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-// pg v9 will change the semantics of sslmode=require/prefer/verify-ca.
-// Explicitly using verify-full locks in the current secure behaviour now.
 function normalizeSslMode(url: string): string {
   return url.replace(/sslmode=(prefer|require|verify-ca)(\b|&|$)/, 'sslmode=verify-full$2')
 }
@@ -16,12 +14,28 @@ function createPrismaClient() {
 }
 
 declare const globalThis: {
-  prismaGlobal: ReturnType<typeof createPrismaClient>
+  prismaGlobal: PrismaClient
 } & typeof global
 
-const prisma = globalThis.prismaGlobal ?? createPrismaClient()
-export default prisma
+let _prisma: PrismaClient | null = null
 
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prismaGlobal = prisma
+function getPrismaInstance(): PrismaClient {
+  if (globalThis.prismaGlobal) return globalThis.prismaGlobal
+  if (!_prisma) {
+    _prisma = createPrismaClient()
+    if (process.env.NODE_ENV !== 'production') {
+      globalThis.prismaGlobal = _prisma
+    }
+  }
+  return _prisma
 }
+
+// Lazy proxy — only initializes the real client on first property access (i.e. first query),
+// not at module import time. This lets Trigger.dev import the file safely during build.
+export default new Proxy({} as PrismaClient, {
+  get(_target, prop: string | symbol) {
+    const instance = getPrismaInstance()
+    const value = (instance as any)[prop]
+    return typeof value === 'function' ? value.bind(instance) : value
+  },
+})
